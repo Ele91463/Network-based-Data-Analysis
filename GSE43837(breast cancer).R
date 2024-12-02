@@ -1,32 +1,21 @@
-
 #WEEK 3
 
 ```{r}
 #BiocManager::install("useful")
 library("GEOquery")
-
 # download the GSE26922 expression data series
 gse <- getGEO("GSE43837")
-#gse <- read.table(file = "C:/Users/eleon/Desktop/QCB/Secondo semestre/network/GSE43837_series_matrix.txt/GSE43837_series_matrix.txt",
-#                  sep = "\t")
-
+              sep = "\t")
 # getGEread.delim()# getGEO returns a list of expression objects, but ...
 length(gse)
 # ... shows us there is only one object in it. We assign it to
 # the same variable.
 gse <- gse[[1]]
-
-# show what we have:
-show(gse)
-
-#View(gse)
-
 # The actual expression data are accessible in the "exprs" ... an
 # Expression Set, the generic data class that BioConductor uses
 # for expression data
 head(exprs(gse))
 length(exprs(gse)) 
-
 # exprs(gse) is a matrix that we can assign to its own variable, to
 # conveniently access the data rows and columns
 ex <- exprs(gse)
@@ -36,7 +25,6 @@ colnames(ex)
 # Analyze value distributions
 #boxplot(ex)
 ex2 <- log2(ex)
-
 boxplot(ex2)
 
 gse$title   #19 brain_met and 19 breast primary
@@ -47,8 +35,6 @@ exprs(gse)   #access the data matrix
 #scale normalization in R
 normalized.ex <- scale(ex2)   #
 boxplot(normalized.ex)
-
-
 ```
 
 
@@ -69,7 +55,7 @@ text(pca$x[,1], pca$x[,2], rownames(pca$x), cex=0.75)
 
 
 #WEEK 4
-#k-means    NON FUNZIONA
+#k-means   
 set.seed(99)
 library("useful")
 
@@ -80,8 +66,7 @@ table(kmeans_result$cluster)
 # plot function in the ‘useful’ package that performs a dimensionality reduction using PCA
 plot(kmeans_result, data=t(ex2)) + geom_text(aes(label=colnames(ex2)),hjust=0,vjust=0)
 
-
-#hierarchical clustering   NON FUNZIONA          
+#hierarchical clustering          
 dist_matrix <- dist(t(ex2))
 hc_result <- hclust(dist_matrix, method = "complete")  #ave = average linkage clustering --> change it
 k <- 2                               #k = number of group
@@ -90,7 +75,6 @@ table(groups)
 #plot(hc_result, hang <- -1, labels=groups)
 plot(hc_result, hang <- -1, labels=groups)
 rect.hclust(hc_result, k = 2, which = NULL, x = NULL, h = NULL, border = 2, cluster = NULL) # red boxes to show groups
-
 ```
 
 
@@ -100,7 +84,7 @@ rect.hclust(hc_result, k = 2, which = NULL, x = NULL, h = NULL, border = 2, clus
 #WEEK 5-6
 #simpler method if you don’t need the complexity of genefilter
 small.eset <- log2(na.omit(ex))
-dim(small.eset) #61359 genes
+dim(small.eset) 
 group <- c(rep('B',19),rep('T',19)) # classification, in order
 #B --> brain metastais T --> breast primary
 
@@ -117,7 +101,6 @@ probe.names <- rownames(rf$importance)
 top200 <- probe.names[order(rf$importance, decreasing=TRUE)[1:200]]
 write.csv(top200, file = "probes-top200-breastdataset.txt", quote=FALSE, row.names = FALSE, col.names=FALSE)
           
-
 #Draw a heatmap
 # Look at variable importance
 imp.temp <- abs(rf$importance[,])
@@ -141,12 +124,6 @@ csc[group=='T'] <- hmcol[200]
 heatmap(sig.eset, scale="row", col=hmcol, ColSideColors=csc)
 
 ```
-
-
-
-
-
-
 
 
 #WEEK 7
@@ -221,8 +198,6 @@ fit.rf <- train(AFFECTED~., data=dat, method="rf",
 results <- resamples(list(LDA=fit.lda, RF=fit.rf))
 summary(results)
 ggplot(results) + labs(y = "Accuracy")
-
-
 
 # Run algorithms using 10-fold cross validation, 10 times
 #I can not do more than 10 because of the small dataset but i can do 
@@ -320,7 +295,6 @@ ggplot(results) + labs(y = "Accuracy")
 
 #parte 2
 #RSCUDO 
-
 #install.packages("igraph")
 #BiocManager::install("rScudo")
 
@@ -406,36 +380,12 @@ caret::confusionMatrix(classRes$predicted, f[-inTrain])
 
 
 
-
-list of genes from LDA model
-```{r}
-
-# lda important genes for classification
-#lda_importance <- varImp(fit.lda, scale=FALSE)
-#t <- order(lda_importance$importance$X0, decreasing = TRUE)
-#lda_importance_list <- rownames(lda_importance$importance[t[1:200], ])
-
-lda_importance <- varImp(fit.lda, scale=FALSE)
-# Assicurati che `lda_importance$importance` sia un vettore o una colonna numerica
-lda_values <- lda_importance$importance[, 1]  # Estrai i valori di importanza
-# Ordina i valori per importanza decrescente
-t <- order(lda_values, decreasing = TRUE)
-# Estrai i 200 geni più importanti
-lda_importance_list <- rownames(lda_importance$importance)[t[1:200]]
-write.csv(lda_importance_list, file = "lda_top200_genes.csv", quote = FALSE, row.names = FALSE)
-
-
-#
-```
-
-
-
 #WEEK 9
 Functional enrichment analysis:
-- DAVID (si report)
-- amiGO (no report)
-- GSEA (no report)
-- g profiler (si report)
+- DAVID 
+- amiGO 
+- GSEA 
+- g profiler
 
 ```{r}
 #install.packages("gprofiler2")
@@ -459,7 +409,6 @@ gostplot(gostres, capped = TRUE, interactive = TRUE)
 p <- gostplot(gostres, capped = TRUE, interactive = FALSE)
 publish_gostplot(p, highlight_terms = c("?????"),           # ????????geni di interesse????
                  width = NA, height = NA, filename = NULL )
-
 
 
 ```
@@ -496,39 +445,26 @@ write.csv(gene_pvalue_df, file = "rf_genes_pvalue.csv", quote = FALSE, row.names
 
 ```{r}
 
-
 #BiocManager::install("u133x3p.db")
 library("u133x3p.db")
 
-# Carica il tuo file con le probe (modifica il percorso e nome file se necessario)
 rf_genes_pvalue <- read.csv("C:/Users/eleon/Desktop/rf_genes_pvalue.csv", stringsAsFactors = FALSE)
 
-# Supponiamo che la colonna 'Gene' contenga gli ID delle probe Affymetrix (modifica se diverso)
 probe_ids <- rf_genes_pvalue$Gene
-
 my.map <- u133x3pENTREZID
-
-# Filtra solo le probe che hanno una mappatura
 mapped.probes <- mappedkeys(my.map)
-
-# Associa ogni probe all'Entrez ID se disponibile
 gene_ids <- sapply(probe_ids, function(probe) {
   if (probe %in% mapped.probes) {
-    return(my.map[[probe]])  # Se la probe è mappata, restituisci l'ID del gene
+    return(my.map[[probe]])
   } else {
-    return(NA)  # Se la probe non è mappata, ritorna NA
+    return(NA)  
   }
 })
 
-# Aggiungi i Gene IDs (EntrezID) al tuo dataframe
 rf_genes_pvalue$Gene_ID <- gene_ids
-
-# Controlla il risultato
 head(lda_genes_pvalue)
 
-# Salva il risultato in un nuovo file CSV
 write.csv(rf_genes_pvalue, "rf_genes_pvalue_with_gene_ids.csv", row.names = FALSE)
-
 
 # Load necessary packages
 library(AnnotationDbi)
